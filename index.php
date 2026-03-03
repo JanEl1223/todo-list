@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>To-Do List App</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            padding-top: 60px;
+        }
+
+        .container {
+            background: #ffffff;
+            width: 500px;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #007bff;
+        }
+
+        button {
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .add-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .add-btn:hover {
+            background: #0056b3;
+        }
+
+        .edit-btn {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .edit-btn:hover {
+            background: #e0a800;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f1f1f1;
+            padding: 10px;
+            text-align: left;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .actions {
+            display: flex;
+            gap: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>To-Do List</h2>
+
+    <div class="input-group">
+        <input type="text" id="taskInput" placeholder="Enter new task">
+        <button class="add-btn" onclick="addTask()">Add</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Task</th>
+                <th width="120">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="taskList"></tbody>
+    </table>
+</div>
+
+<script>
+function loadTasks() {
+    fetch("fetch.php")
+    .then(response => response.text())
+    .then(data => {
+        document.getElementById("taskList").innerHTML = data;
+    });
+}
+
+function addTask() {
+    let task = document.getElementById("taskInput").value;
+
+    if(task.trim() === "") return;
+
+    fetch("add.php", {
+        method: "POST",
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: "task=" + encodeURIComponent(task)
+    })
+    .then(() => {
+        document.getElementById("taskInput").value = "";
+        loadTasks();
+    });
+}
+
+function deleteTask(id) {
+    if(confirm("Are you sure you want to delete this task?")) {
+        fetch("delete.php", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: "id=" + id
+        })
+        .then(() => loadTasks());
+    }
+}
+
+function editTask(id, oldTask) {
+    let newTask = prompt("Edit Task:", oldTask);
+
+    if (newTask !== null && newTask.trim() !== "") {
+        fetch("update.php", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: "id=" + id + "&task=" + encodeURIComponent(newTask)
+        })
+        .then(() => loadTasks());
+    }
+}
+
+window.onload = loadTasks;
+</script>
+
+</body>
+</html>
